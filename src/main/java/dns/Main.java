@@ -4,6 +4,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import dns.message.Header;
+import dns.message.Message;
+import dns.message.Question;
 
 public class Main {
 
@@ -34,7 +36,15 @@ public class Main {
 					(short) 0
 				);
 
-				final byte[] responseBuffer = header.encode();
+				final var question = new Question(
+					new String[] { "codecrafters", "io" },
+					(short) 1,
+					(short) 1
+				);
+				
+				final var message = new Message(header, question);
+
+				final byte[] responseBuffer = message.encode();
 				final var response = new DatagramPacket(responseBuffer, responseBuffer.length, request.getSocketAddress());
 				serverSocket.send(response);
 			}

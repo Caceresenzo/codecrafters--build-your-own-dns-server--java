@@ -11,14 +11,9 @@ class HeaderEncoderTest {
 	void packetIdentifier() {
 		final var expected = new byte[] {
 			(byte) 0b11111111, (byte) 0b11111111,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
 		};
 
-		final var bytes = new byte[12];
+		final var bytes = new byte[expected.length];
 		HeaderEncoder.packetIdentifier(bytes, (short) -1);
 
 		assertArrayEquals(expected, bytes);
@@ -70,12 +65,9 @@ class HeaderEncoderTest {
 			(byte) 0, (byte) 0,
 			(byte) 0, (byte) 0,
 			(byte) 0b11111111, (byte) 0b11111111,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
 		};
 
-		final var bytes = new byte[12];
+		final var bytes = new byte[expected.length];
 		HeaderEncoder.questionCount(bytes, (short) -1);
 
 		assertArrayEquals(expected, bytes);
@@ -88,11 +80,9 @@ class HeaderEncoderTest {
 			(byte) 0, (byte) 0,
 			(byte) 0, (byte) 0,
 			(byte) 0b11111111, (byte) 0b11111111,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
 		};
 
-		final var bytes = new byte[12];
+		final var bytes = new byte[expected.length];
 		HeaderEncoder.answerRecordCount(bytes, (short) -1);
 
 		assertArrayEquals(expected, bytes);
@@ -106,10 +96,9 @@ class HeaderEncoderTest {
 			(byte) 0, (byte) 0,
 			(byte) 0, (byte) 0,
 			(byte) 0b11111111, (byte) 0b11111111,
-			(byte) 0, (byte) 0,
 		};
 
-		final var bytes = new byte[12];
+		final var bytes = new byte[expected.length];
 		HeaderEncoder.authorityRecordCount(bytes, (short) -1);
 
 		assertArrayEquals(expected, bytes);
