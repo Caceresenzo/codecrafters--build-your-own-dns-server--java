@@ -3,6 +3,8 @@ package dns;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+import dns.message.Header;
+
 public class Main {
 
 	public static void main(String[] args) throws Exception {
@@ -16,7 +18,7 @@ public class Main {
 
 				System.out.println("Received data");
 
-				final var message = new Message(
+				final var header = new Header(
 					(short) 1234,
 					true,
 					(byte) 0,
@@ -32,7 +34,7 @@ public class Main {
 					(short) 0
 				);
 
-				final byte[] responseBuffer = message.encode();
+				final byte[] responseBuffer = header.encode();
 				final var response = new DatagramPacket(responseBuffer, responseBuffer.length, request.getSocketAddress());
 				serverSocket.send(response);
 			}

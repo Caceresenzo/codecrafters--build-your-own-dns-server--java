@@ -1,6 +1,6 @@
-package dns;
+package dns.message;
 
-public record Message(
+public record Header(
 	/** 16 bits	A random ID assigned to query packets. Response packets must reply with the same ID. */
 	short packetIdentifier,
 
@@ -44,24 +44,24 @@ public record Message(
 	public byte[] encode() {
 		final var bytes = new byte[12];
 
-		Encoder.addShort(bytes, 0, packetIdentifier);
+		HeaderEncoder.packetIdentifier(bytes, packetIdentifier);
 
 		bytes[2] = (byte) (0
-			| (byte) Encoder.queryResponseIndicator(queryResponseIndicator)
-			| (byte) Encoder.operationCode(operationCode)
-			| (byte) Encoder.authoritativeAnswer(authoritativeAnswer)
-			| (byte) Encoder.truncation(truncation)
-			| (byte) Encoder.recursionDesired(recursionDesired));
+			| (byte) HeaderEncoder.queryResponseIndicator(queryResponseIndicator)
+			| (byte) HeaderEncoder.operationCode(operationCode)
+			| (byte) HeaderEncoder.authoritativeAnswer(authoritativeAnswer)
+			| (byte) HeaderEncoder.truncation(truncation)
+			| (byte) HeaderEncoder.recursionDesired(recursionDesired));
 
 		bytes[3] = (byte) (0
-			| (byte) Encoder.recursionAvailable(recursionAvailable)
-			| (byte) Encoder.reserved(reserved)
-			| (byte) Encoder.responseCode(responseCode));
+			| (byte) HeaderEncoder.recursionAvailable(recursionAvailable)
+			| (byte) HeaderEncoder.reserved(reserved)
+			| (byte) HeaderEncoder.responseCode(responseCode));
 
-		Encoder.addShort(bytes, 4, questionCount);
-		Encoder.addShort(bytes, 6, answerRecordCount);
-		Encoder.addShort(bytes, 8, authorityRecordCount);
-		Encoder.addShort(bytes, 10, additionalRecordCount);
+		HeaderEncoder.questionCount(bytes, questionCount);
+		HeaderEncoder.answerRecordCount(bytes, answerRecordCount);
+		HeaderEncoder.authorityRecordCount(bytes, authorityRecordCount);
+		HeaderEncoder.additionalRecordCount(bytes, additionalRecordCount);
 
 		return bytes;
 	}
