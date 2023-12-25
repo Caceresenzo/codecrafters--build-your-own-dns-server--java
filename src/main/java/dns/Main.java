@@ -3,10 +3,12 @@ package dns;
 import java.io.ByteArrayInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.Collections;
+import java.util.List;
 
+import dns.message.Answer;
 import dns.message.Header;
 import dns.message.Message;
+import dns.message.Question;
 
 public class Main {
 
@@ -46,16 +48,35 @@ public class Main {
 			false,
 			(byte) 0,
 			(byte) (requestHeader.operationCode() == 0 ? 0 : 4),
-			(byte) 0,
-			(byte) 0,
+			(byte) 1,
+			(byte) 1,
 			(byte) 0,
 			(byte) 0
 		);
 
+		final var questions = List.of(
+			new Question(
+				List.of("codecrafters", "io"),
+				(short) 1,
+				(short) 1
+			)
+		);
+
+		final var answers = List.of(
+			new Answer(
+				List.of("codecrafters", "io"),
+				(short) 1,
+				(short) 1,
+				60,
+				(byte) 4,
+				List.of((byte) 8, (byte) 8, (byte) 8, (byte) 8)
+			)
+		);
+
 		return new Message(
 			header,
-			Collections.emptyList(),
-			Collections.emptyList()
+			questions,
+			answers
 		);
 	}
 
