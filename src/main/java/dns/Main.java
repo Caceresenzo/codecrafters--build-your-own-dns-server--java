@@ -54,9 +54,11 @@ public class Main {
 			(byte) 0
 		);
 
+		final var name = request.questions().getFirst().name();
+
 		final var questions = List.of(
 			new Question(
-				List.of("codecrafters", "io"),
+				name,
 				(short) 1,
 				(short) 1
 			)
@@ -64,7 +66,7 @@ public class Main {
 
 		final var answers = List.of(
 			new Answer(
-				List.of("codecrafters", "io"),
+				name,
 				(short) 1,
 				(short) 1,
 				60,
