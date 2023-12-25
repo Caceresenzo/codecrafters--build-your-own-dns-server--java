@@ -3,6 +3,7 @@ package dns;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+import dns.message.Answer;
 import dns.message.Header;
 import dns.message.Message;
 import dns.message.Question;
@@ -31,7 +32,7 @@ public class Main {
 					(byte) 0,
 					(byte) 0,
 					(short) 1,
-					(short) 0,
+					(short) 1,
 					(short) 0,
 					(short) 0
 				);
@@ -41,8 +42,17 @@ public class Main {
 					(short) 1,
 					(short) 1
 				);
-				
-				final var message = new Message(header, question);
+
+				final var answer = new Answer(
+					new String[] { "codecrafters", "io" },
+					(short) 1,
+					(short) 1,
+					60,
+					(byte) 4,
+					new byte[] { 8, 8, 8, 8 }
+				);
+
+				final var message = new Message(header, question, answer);
 
 				final byte[] responseBuffer = message.encode();
 				final var response = new DatagramPacket(responseBuffer, responseBuffer.length, request.getSocketAddress());
