@@ -3,11 +3,13 @@ package dns.message;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 class QuestionEncoderTest {
 
-	static String[] google = { "google", "com" };
+	static List<String> google = List.of("google", "com");
 
 	@Test
 	void nameSize() {

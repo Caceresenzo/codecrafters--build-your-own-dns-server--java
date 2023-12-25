@@ -1,22 +1,53 @@
 package dns.message;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import lombok.SneakyThrows;
+
 public record Message(
 	Header header,
-	Question question,
-	Answer answer
+	List<Question> questions,
+	List<Answer> answers
 ) {
 
+	@SneakyThrows
 	public byte[] encode() {
-		final var header = this.header.encode();
-		final var question = this.question.encode();
-		final var answer = this.answer.encode();
+		final var outputStream = new ByteArrayOutputStream();
 
-		final var bytes = new byte[header.length + question.length + answer.length];
-		System.arraycopy(header, 0, bytes, 0, header.length);
-		System.arraycopy(question, 0, bytes, header.length, question.length);
-		System.arraycopy(answer, 0, bytes, header.length + question.length, answer.length);
+		outputStream.write(header.encode());
 
-		return bytes;
+		for (final var question : questions) {
+			outputStream.write(question.encode());
+		}
+
+		for (final var answer : answers) {
+			outputStream.write(answer.encode());
+		}
+
+		return outputStream.toByteArray();
+	}
+
+	public static Message parse(InputStream inputStream) throws IOException {
+		final var dataInputStream = new DataInputStream(inputStream);
+
+		final var header = Header.parse(dataInputStream);
+
+		final var questions = new ArrayList<Question>();
+		for (var index = 0; index < header.questionCount(); ++index) {
+			questions.add(Question.parse(dataInputStream));
+		}
+
+		final var answers = new ArrayList<Answer>();
+		for (var index = 0; index < header.answerRecordCount(); ++index) {
+			answers.add(Answer.parse(dataInputStream));
+		}
+
+		return new Message(header, questions, answers);
 	}
 
 }

@@ -1,8 +1,12 @@
 package dns.message;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.List;
+
 public record Answer(
 	/* Label Sequence	The domain name encoded as a sequence of labels. */
-	String[] name,
+	List<String> name,
 
 	/** 2-byte Integer	1 for an A record, 5 for a CNAME record etc.) */
 	short type,
@@ -17,11 +21,11 @@ public record Answer(
 	short length,
 
 	/** Variable	Data specific to the record type. */
-	byte[] data
+	List<Byte> data
 ) {
 
 	public byte[] encode() {
-		final var nameSize = QuestionEncoder.nameSize(name);
+		final var nameSize = AnswerEncoder.nameSize(name);
 
 		final var bytes = new byte[nameSize + 10 + length];
 
@@ -33,6 +37,24 @@ public record Answer(
 		AnswerEncoder.data(bytes, nameSize, data);
 
 		return bytes;
+	}
+
+	public static Answer parse(DataInputStream dataInputStream) throws IOException {
+		final var name = AnswerDecoder.name(dataInputStream);
+		final var type = AnswerDecoder.type(dataInputStream);
+		final var class_ = AnswerDecoder.class_(dataInputStream);
+		final var timeToLive = AnswerDecoder.timeToLive(dataInputStream);
+		final var length = AnswerDecoder.length(dataInputStream);
+		final var data = AnswerDecoder.data(dataInputStream, length);
+
+		return new Answer(
+			name,
+			type,
+			class_,
+			timeToLive,
+			length,
+			data
+		);
 	}
 
 }

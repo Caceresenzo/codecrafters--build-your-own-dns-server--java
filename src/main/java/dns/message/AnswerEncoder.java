@@ -1,14 +1,16 @@
 package dns.message;
 
+import java.util.List;
+
 import dns.util.EncoderHelper;
 
 public class AnswerEncoder {
 
-	public static int nameSize(String[] name) {
+	public static int nameSize(List<String> name) {
 		return EncoderHelper.nameSize(name);
 	}
 
-	public static void name(byte[] bytes, String[] value) {
+	public static void name(byte[] bytes, List<String> value) {
 		EncoderHelper.name(bytes, value);
 	}
 
@@ -28,8 +30,10 @@ public class AnswerEncoder {
 		EncoderHelper.addShort(bytes, nameSize + 8, value);
 	}
 
-	public static void data(byte[] bytes, int nameSize, byte[] value) {
-		System.arraycopy(value, 0, bytes, nameSize + 10, value.length);
+	public static void data(byte[] bytes, int nameSize, List<Byte> value) {
+		for (var index = 0; index < value.size(); ++index) {
+			bytes[nameSize + 10 + index] = value.get(index);
+		}
 	}
 
 }

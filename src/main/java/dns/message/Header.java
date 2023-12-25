@@ -1,5 +1,8 @@
 package dns.message;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+
 public record Header(
 	/** 16 bits	A random ID assigned to query packets. Response packets must reply with the same ID. */
 	short packetIdentifier,
@@ -64,6 +67,43 @@ public record Header(
 		HeaderEncoder.additionalRecordCount(bytes, additionalRecordCount);
 
 		return bytes;
+	}
+
+	public static Header parse(DataInputStream dataInputStream) throws IOException {
+		final var packetIdentifier = HeaderDecoder.packetIdentifier(dataInputStream);
+
+		final var flags1 = dataInputStream.readByte();
+		final var queryResponseIndicator = HeaderDecoder.queryResponseIndicator(flags1);
+		final var operationCode = HeaderDecoder.operationCode(flags1);
+		final var authoritativeAnswer = HeaderDecoder.authoritativeAnswer(flags1);
+		final var truncation = HeaderDecoder.truncation(flags1);
+		final var recursionDesired = HeaderDecoder.recursionDesired(flags1);
+
+		final var flags2 = dataInputStream.readByte();
+		final var recursionAvailable = HeaderDecoder.recursionAvailable(flags2);
+		final var reserved = HeaderDecoder.reserved(flags2);
+		final var responseCode = HeaderDecoder.responseCode(flags2);
+
+		final var questionCount = HeaderDecoder.questionCount(dataInputStream);
+		final var answerRecordCount = HeaderDecoder.answerRecordCount(dataInputStream);
+		final var authorityRecordCount = HeaderDecoder.authorityRecordCount(dataInputStream);
+		final var additionalRecordCount = HeaderDecoder.additionalRecordCount(dataInputStream);
+
+		return new Header(
+			packetIdentifier,
+			queryResponseIndicator,
+			operationCode,
+			authoritativeAnswer,
+			truncation,
+			recursionDesired,
+			recursionAvailable,
+			reserved,
+			responseCode,
+			questionCount,
+			answerRecordCount,
+			authorityRecordCount,
+			additionalRecordCount
+		);
 	}
 
 }

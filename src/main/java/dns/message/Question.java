@@ -1,8 +1,12 @@
 package dns.message;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.List;
+
 public record Question(
 	/* A domain name, represented as a sequence of "labels" */
-	String[] name,
+	List<String> name,
 
 	/** 2-byte int; the type of record (1 for an A record, 5 for a CNAME record etc.) */
 	short type,
@@ -21,6 +25,18 @@ public record Question(
 		QuestionEncoder.class_(bytes, nameSize, class_);
 
 		return bytes;
+	}
+
+	public static Question parse(DataInputStream dataInputStream) throws IOException {
+		final var name = QuestionDecoder.name(dataInputStream);
+		final var type = QuestionDecoder.type(dataInputStream);
+		final var class_ = QuestionDecoder.class_(dataInputStream);
+
+		return new Question(
+			name,
+			type,
+			class_
+		);
 	}
 
 }

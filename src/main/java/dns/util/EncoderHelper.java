@@ -1,8 +1,10 @@
 package dns.util;
 
+import java.util.List;
+
 public class EncoderHelper {
 
-	public static int nameSize(String[] name) {
+	public static int nameSize(List<String> name) {
 		var length = 1 /* null terminator */;
 
 		for (final var label : name) {
@@ -13,7 +15,7 @@ public class EncoderHelper {
 		return length;
 	}
 
-	public static void name(byte[] bytes, String[] value) {
+	public static void name(byte[] bytes, List<String> value) {
 		var index = 0;
 		for (final var label : value) {
 			final var labelBytes = label.getBytes();

@@ -1,12 +1,12 @@
 package dns;
 
+import java.io.ByteArrayInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.Collections;
 
-import dns.message.Answer;
 import dns.message.Header;
 import dns.message.Message;
-import dns.message.Question;
 
 public class Main {
 
@@ -16,49 +16,47 @@ public class Main {
 		try (final var serverSocket = new DatagramSocket(2053)) {
 			while (true) {
 				final var requestBuffer = new byte[512];
-				final var request = new DatagramPacket(requestBuffer, requestBuffer.length);
-				serverSocket.receive(request);
+				final var requestPacket = new DatagramPacket(requestBuffer, requestBuffer.length);
+				serverSocket.receive(requestPacket);
 
 				System.out.println("Received data");
 
-				final var header = new Header(
-					(short) 1234,
-					true,
-					(byte) 0,
-					false,
-					false,
-					false,
-					false,
-					(byte) 0,
-					(byte) 0,
-					(short) 1,
-					(short) 1,
-					(short) 0,
-					(short) 0
-				);
+				final var inputStream = new ByteArrayInputStream(requestPacket.getData(), 0, requestPacket.getLength());
 
-				final var question = new Question(
-					new String[] { "codecrafters", "io" },
-					(short) 1,
-					(short) 1
-				);
+				final var request = Message.parse(inputStream);
+				final var response = handle(request);
 
-				final var answer = new Answer(
-					new String[] { "codecrafters", "io" },
-					(short) 1,
-					(short) 1,
-					60,
-					(byte) 4,
-					new byte[] { 8, 8, 8, 8 }
-				);
-
-				final var message = new Message(header, question, answer);
-
-				final byte[] responseBuffer = message.encode();
-				final var response = new DatagramPacket(responseBuffer, responseBuffer.length, request.getSocketAddress());
-				serverSocket.send(response);
+				final byte[] responseBuffer = response.encode();
+				final var responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length, requestPacket.getSocketAddress());
+				serverSocket.send(responsePacket);
 			}
 		}
+	}
+
+	private static Message handle(Message request) {
+		final var requestHeader = request.header();
+
+		final var header = new Header(
+			requestHeader.packetIdentifier(),
+			true,
+			requestHeader.operationCode(),
+			false,
+			false,
+			requestHeader.recursionDesired(),
+			false,
+			(byte) 0,
+			(byte) (requestHeader.operationCode() == 0 ? 0 : 4),
+			(byte) 0,
+			(byte) 0,
+			(byte) 0,
+			(byte) 0
+		);
+
+		return new Message(
+			header,
+			Collections.emptyList(),
+			Collections.emptyList()
+		);
 	}
 
 }

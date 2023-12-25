@@ -1,14 +1,16 @@
 package dns.message;
 
+import java.util.List;
+
 import dns.util.EncoderHelper;
 
 public class QuestionEncoder {
 
-	public static int nameSize(String[] name) {
+	public static int nameSize(List<String> name) {
 		return EncoderHelper.nameSize(name);
 	}
 
-	public static void name(byte[] bytes, String[] value) {
+	public static void name(byte[] bytes, List<String> value) {
 		EncoderHelper.name(bytes, value);
 	}
 
