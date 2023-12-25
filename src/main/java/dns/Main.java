@@ -1,3 +1,5 @@
+package dns;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -14,7 +16,23 @@ public class Main {
 
 				System.out.println("Received data");
 
-				final byte[] responseBuffer = new byte[512];
+				final var message = new Message(
+					(short) 1234,
+					true,
+					(byte) 0,
+					false,
+					false,
+					false,
+					false,
+					(byte) 0,
+					(byte) 0,
+					(short) 0,
+					(short) 0,
+					(short) 0,
+					(short) 0
+				);
+
+				final byte[] responseBuffer = message.encode();
 				final var response = new DatagramPacket(responseBuffer, responseBuffer.length, request.getSocketAddress());
 				serverSocket.send(response);
 			}
