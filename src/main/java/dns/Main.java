@@ -1,23 +1,41 @@
 package dns;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import dns.message.Answer;
-import dns.message.Header;
+import dns.handler.EchoHandler;
+import dns.handler.ForwardHandler;
+import dns.handler.Handler;
 import dns.message.Message;
-import dns.message.Question;
 
 public class Main {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("codecrafters build-your-own-dns");
+	public static final int PORT = 2053;
 
-		try (final var serverSocket = new DatagramSocket(2053)) {
+	public static void main(String[] args) throws IOException {
+		System.out.println("codecrafters build-your-own-dns");
+		
+		if (args.length == 2 && "--resolver".equals(args[0])) {
+			final var parts = args[1].split(":", 2);
+			
+			final var address = InetAddress.getByName(parts[0]);
+			final var port = Integer.parseInt(parts[1]);
+			
+			serve(new ForwardHandler(new InetSocketAddress(address, port)));
+		} else {
+			serve(new EchoHandler());
+		}
+	}
+
+	public static void serve(Handler handler) throws IOException {
+		System.out.println("handler: %s".formatted(handler.getClass()));
+		
+		try (final var serverSocket = new DatagramSocket(PORT)) {
 			final var bytes = new byte[1024];
 
 			while (true) {
@@ -26,15 +44,10 @@ public class Main {
 
 				System.out.println("Received data");
 
-				//				System.out.println(new String(bytes, 0, requestPacket.getLength()));
-				//				try (final var outputStream = new FileOutputStream(new File("req.bin"))) {
-				//					outputStream.write(requestPacket.getData(), requestPacket.getOffset(), requestPacket.getLength());
-				//				}
-
 				final var requestBuffer = ByteBuffer.wrap(requestPacket.getData(), requestPacket.getOffset(), requestPacket.getLength());
 
 				final var request = Message.parse(requestBuffer);
-				final var response = handle(request);
+				final var response = handler.handle(request);
 
 				Arrays.fill(bytes, (byte) 0);
 				final var responseBuffer = ByteBuffer.wrap(bytes);
@@ -44,59 +57,6 @@ public class Main {
 				serverSocket.send(responsePacket);
 			}
 		}
-	}
-
-	private static Message handle(Message request) {
-		final var requestHeader = request.header();
-		final var requestQuestions = request.questions();
-
-		final var header = new Header(
-			requestHeader.packetIdentifier(),
-			true,
-			requestHeader.operationCode(),
-			false,
-			false,
-			requestHeader.recursionDesired(),
-			false,
-			(byte) 0,
-			(byte) (requestHeader.operationCode() == 0 ? 0 : 4),
-			(byte) requestQuestions.size(),
-			(byte) requestQuestions.size(),
-			(byte) 0,
-			(byte) 0
-		);
-
-		final var questions = new ArrayList<Question>();
-		final var answers = new ArrayList<Answer>();
-
-		for (final var question : requestQuestions) {
-			final var name = question.name();
-
-			questions.add(
-				new Question(
-					name,
-					(short) 1,
-					(short) 1
-				)
-			);
-
-			answers.add(
-				new Answer(
-					name,
-					(short) 1,
-					(short) 1,
-					60,
-					(byte) 4,
-					List.of((byte) 8, (byte) 8, (byte) 8, (byte) 8)
-				)
-			);
-		}
-
-		return new Message(
-			header,
-			questions,
-			answers
-		);
 	}
 
 }
