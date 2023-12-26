@@ -11,7 +11,8 @@ const (
 )
 
 func domainPairForCompression() (string, string) {
-	return "abc.longassdomainname.com.", "def.longassdomainname.com."
+	// return "abc.longassdomainname.com.", "def.longassdomainname.com."
+	return "google.com.", "google.com."
 }
 
 func sendMultiQuery(request *dns.Msg) (*dns.Msg, error) {
