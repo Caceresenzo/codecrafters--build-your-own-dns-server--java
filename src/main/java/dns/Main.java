@@ -3,6 +3,7 @@ package dns;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,6 +25,11 @@ public class Main {
 				serverSocket.receive(requestPacket);
 
 				System.out.println("Received data");
+
+				//				System.out.println(new String(bytes, 0, requestPacket.getLength()));
+				//				try (final var outputStream = new FileOutputStream(new File("req.bin"))) {
+				//					outputStream.write(requestPacket.getData(), requestPacket.getOffset(), requestPacket.getLength());
+				//				}
 
 				final var requestBuffer = ByteBuffer.wrap(requestPacket.getData(), requestPacket.getOffset(), requestPacket.getLength());
 
@@ -59,26 +65,31 @@ public class Main {
 			(byte) 0
 		);
 
-		final var name = request.questions().getFirst().name();
+		final var questions = new ArrayList<Question>();
+		final var answers = new ArrayList<Answer>();
 
-		final var questions = List.of(
-			new Question(
-				name,
-				(short) 1,
-				(short) 1
-			)
-		);
+		for (final var question : request.questions()) {
+			final var name = question.name();
 
-		final var answers = List.of(
-			new Answer(
-				name,
-				(short) 1,
-				(short) 1,
-				60,
-				(byte) 4,
-				List.of((byte) 8, (byte) 8, (byte) 8, (byte) 8)
-			)
-		);
+			questions.add(
+				new Question(
+					name,
+					(short) 1,
+					(short) 1
+				)
+			);
+
+			answers.add(
+				new Answer(
+					name,
+					(short) 1,
+					(short) 1,
+					60,
+					(byte) 4,
+					List.of((byte) 8, (byte) 8, (byte) 8, (byte) 8)
+				)
+			);
+		}
 
 		return new Message(
 			header,

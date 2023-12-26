@@ -11,10 +11,22 @@ public class DecoderHelper {
 
 		byte length;
 		while ((length = buffer.get()) != 0) {
-			final var label = new byte[length];
-			buffer.get(label);
+			if ((length & 0xC0) == 0xC0) {
+				final var offset = ((length & 0x3F) << 8) | (buffer.get() & 0xFF);
 
-			labels.add(new String(label));
+				final var previous = buffer.position();
+				buffer.position(offset);
+
+				labels.addAll(name(buffer));
+
+				buffer.position(previous);
+				break;
+			} else {
+				final var label = new byte[length];
+				buffer.get(label);
+
+				labels.add(new String(label));
+			}
 		}
 
 		return labels;
@@ -22,11 +34,11 @@ public class DecoderHelper {
 
 	public static List<Byte> data(ByteBuffer buffer, int length) {
 		final var list = new ArrayList<Byte>(length);
-		
+
 		for (var index = 0; index < length; ++index) {
 			list.add(buffer.get());
 		}
-		
+
 		return list;
 	}
 
