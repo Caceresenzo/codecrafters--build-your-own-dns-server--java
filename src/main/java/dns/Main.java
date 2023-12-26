@@ -48,6 +48,7 @@ public class Main {
 
 	private static Message handle(Message request) {
 		final var requestHeader = request.header();
+		final var requestQuestions = request.questions();
 
 		final var header = new Header(
 			requestHeader.packetIdentifier(),
@@ -59,8 +60,8 @@ public class Main {
 			false,
 			(byte) 0,
 			(byte) (requestHeader.operationCode() == 0 ? 0 : 4),
-			(byte) 1,
-			(byte) 1,
+			(byte) requestQuestions.size(),
+			(byte) requestQuestions.size(),
 			(byte) 0,
 			(byte) 0
 		);
@@ -68,7 +69,7 @@ public class Main {
 		final var questions = new ArrayList<Question>();
 		final var answers = new ArrayList<Answer>();
 
-		for (final var question : request.questions()) {
+		for (final var question : requestQuestions) {
 			final var name = question.name();
 
 			questions.add(

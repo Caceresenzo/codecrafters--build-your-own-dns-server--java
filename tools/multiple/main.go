@@ -50,6 +50,7 @@ func main() {
 	response, err := sendMultiQuery(request)
 
 	if err != nil {
+		fmt.Printf("Error: %s\n", err)
 		return
 	}
 
