@@ -1,23 +1,10 @@
 package dns.message;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 class HeaderEncoderTest {
-
-	@Test
-	void packetIdentifier() {
-		final var expected = new byte[] {
-			(byte) 0b11111111, (byte) 0b11111111,
-		};
-
-		final var bytes = new byte[expected.length];
-		HeaderEncoder.packetIdentifier(bytes, (short) -1);
-
-		assertArrayEquals(expected, bytes);
-	}
 
 	@Test
 	void queryResponseIndicator() {
@@ -57,68 +44,6 @@ class HeaderEncoderTest {
 	@Test
 	void responseCode() {
 		assertEquals((byte) 0b00001101, HeaderEncoder.responseCode((byte) 0b1101));
-	}
-
-	@Test
-	void questionCount() {
-		final var expected = new byte[] {
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0b11111111, (byte) 0b11111111,
-		};
-
-		final var bytes = new byte[expected.length];
-		HeaderEncoder.questionCount(bytes, (short) -1);
-
-		assertArrayEquals(expected, bytes);
-	}
-
-	@Test
-	void answerRecordCount() {
-		final var expected = new byte[] {
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0b11111111, (byte) 0b11111111,
-		};
-
-		final var bytes = new byte[expected.length];
-		HeaderEncoder.answerRecordCount(bytes, (short) -1);
-
-		assertArrayEquals(expected, bytes);
-	}
-
-	@Test
-	void authorityRecordCount() {
-		final var expected = new byte[] {
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0b11111111, (byte) 0b11111111,
-		};
-
-		final var bytes = new byte[expected.length];
-		HeaderEncoder.authorityRecordCount(bytes, (short) -1);
-
-		assertArrayEquals(expected, bytes);
-	}
-
-	@Test
-	void additionalRecordCount() {
-		final var expected = new byte[] {
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0, (byte) 0,
-			(byte) 0b11111111, (byte) 0b11111111,
-		};
-
-		final var bytes = new byte[12];
-		HeaderEncoder.additionalRecordCount(bytes, (short) -1);
-
-		assertArrayEquals(expected, bytes);
 	}
 
 }

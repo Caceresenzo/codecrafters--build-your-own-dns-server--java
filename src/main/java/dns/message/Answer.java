@@ -1,8 +1,10 @@
 package dns.message;
 
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
+
+import dns.util.DecoderHelper;
+import dns.util.EncoderHelper;
 
 public record Answer(
 	/* Label Sequence	The domain name encoded as a sequence of labels. */
@@ -24,28 +26,22 @@ public record Answer(
 	List<Byte> data
 ) {
 
-	public byte[] encode() {
-		final var nameSize = AnswerEncoder.nameSize(name);
-
-		final var bytes = new byte[nameSize + 10 + length];
-
-		AnswerEncoder.name(bytes, name);
-		AnswerEncoder.type(bytes, nameSize, type);
-		AnswerEncoder.class_(bytes, nameSize, class_);
-		AnswerEncoder.timeToLive(bytes, nameSize, timeToLive);
-		AnswerEncoder.length(bytes, nameSize, length);
-		AnswerEncoder.data(bytes, nameSize, data);
-
-		return bytes;
+	public void encode(ByteBuffer buffer) {
+		EncoderHelper.name(buffer, name);
+		buffer.putShort(type);
+		buffer.putShort(class_);
+		buffer.putInt(timeToLive);
+		buffer.putShort(length);
+		EncoderHelper.data(buffer, data);
 	}
 
-	public static Answer parse(DataInputStream dataInputStream) throws IOException {
-		final var name = AnswerDecoder.name(dataInputStream);
-		final var type = AnswerDecoder.type(dataInputStream);
-		final var class_ = AnswerDecoder.class_(dataInputStream);
-		final var timeToLive = AnswerDecoder.timeToLive(dataInputStream);
-		final var length = AnswerDecoder.length(dataInputStream);
-		final var data = AnswerDecoder.data(dataInputStream, length);
+	public static Answer parse(ByteBuffer buffer) {
+		final var name = DecoderHelper.name(buffer);
+		final var type = buffer.getShort();
+		final var class_ = buffer.getShort();
+		final var timeToLive = buffer.getInt();
+		final var length = buffer.getShort();
+		final var data = DecoderHelper.data(buffer, length);
 
 		return new Answer(
 			name,

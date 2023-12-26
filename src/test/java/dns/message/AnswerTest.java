@@ -2,15 +2,17 @@ package dns.message;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 class AnswerTest {
+
+	static List<String> google = List.of("google", "com");
 
 	static byte[] dummyBytes = {
 		6, 'g', 'o', 'o', 'g', 'l', 'e',
@@ -24,7 +26,7 @@ class AnswerTest {
 	};
 
 	final Answer dummy = new Answer(
-		AnswerEncoderTest.google,
+		google,
 		(byte) -1,
 		(byte) -1,
 		-1,
@@ -34,15 +36,22 @@ class AnswerTest {
 
 	@Test
 	void encode() {
-		assertArrayEquals(dummyBytes, dummy.encode());
+		final var buffer = ByteBuffer.allocate(512);
+		dummy.encode(buffer);
+
+		final var bytes = new byte[buffer.position()];
+		buffer.rewind().get(bytes);
+
+		assertArrayEquals(dummyBytes, bytes);
 	}
 
 	@Test
 	void parse() throws IOException {
-		final var dataInputStream = new DataInputStream(new ByteArrayInputStream(dummyBytes));
-		final var parsed = Answer.parse(dataInputStream);
+		final var buffer = ByteBuffer.wrap(dummyBytes);
+		final var parsed = Answer.parse(buffer);
 
 		assertEquals(dummy, parsed);
+		assertFalse(buffer.hasRemaining());
 	}
 
 }

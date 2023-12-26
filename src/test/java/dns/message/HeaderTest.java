@@ -2,10 +2,10 @@ package dns.message;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,15 +44,22 @@ class HeaderTest {
 
 	@Test
 	void encode() {
-		assertArrayEquals(dummyBytes, dummy.encode());
+		final var buffer = ByteBuffer.allocate(512);
+		dummy.encode(buffer);
+
+		final var bytes = new byte[buffer.position()];
+		buffer.rewind().get(bytes);
+
+		assertArrayEquals(dummyBytes, bytes);
 	}
 
 	@Test
 	void parse() throws IOException {
-		final var dataInputStream = new DataInputStream(new ByteArrayInputStream(dummyBytes));
-		final var parsed = Header.parse(dataInputStream);
-		
+		final var buffer = ByteBuffer.wrap(dummyBytes);
+		final var parsed = Header.parse(buffer);
+
 		assertEquals(dummy, parsed);
+		assertFalse(buffer.hasRemaining());
 	}
 
 }

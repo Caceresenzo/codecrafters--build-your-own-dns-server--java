@@ -1,44 +1,25 @@
 package dns.util;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 public class EncoderHelper {
 
-	public static int nameSize(List<String> name) {
-		var length = 1 /* null terminator */;
-
-		for (final var label : name) {
-			length += 1 /* label length */;
-			length += label.length();
-		}
-
-		return length;
-	}
-
-	public static void name(byte[] bytes, List<String> value) {
-		var index = 0;
+	public static void name(ByteBuffer buffer, List<String> value) {
 		for (final var label : value) {
 			final var labelBytes = label.getBytes();
-			final var labelLength = labelBytes.length;
 
-			bytes[index++] = (byte) labelLength;
-			System.arraycopy(labelBytes, 0, bytes, index, labelLength);
-			index += labelLength;
+			buffer.put((byte) labelBytes.length);
+			buffer.put(labelBytes);
 		}
 
-		bytes[index] = 0;
+		buffer.put((byte) 0);
 	}
 
-	public static void addShort(byte[] array, int offset, short value) {
-		array[offset + 0] = (byte) (value >> 8);
-		array[offset + 1] = (byte) (value);
-	}
-
-	public static void addInt(byte[] array, int offset, int value) {
-		array[offset + 0] = (byte) (value >> 24);
-		array[offset + 1] = (byte) (value >> 16);
-		array[offset + 2] = (byte) (value >> 8);
-		array[offset + 3] = (byte) (value);
+	public static void data(ByteBuffer buffer, List<Byte> value) {
+		for (final var data : value) {
+			buffer.put(data);
+		}
 	}
 
 	public static byte shift(boolean value, int amount) {

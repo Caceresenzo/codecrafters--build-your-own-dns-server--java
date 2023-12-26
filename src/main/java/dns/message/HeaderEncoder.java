@@ -4,10 +4,6 @@ import dns.util.EncoderHelper;
 
 public class HeaderEncoder {
 
-	public static void packetIdentifier(byte[] bytes, short value) {
-		EncoderHelper.addShort(bytes, 0, value);
-	}
-	
 	public static byte queryResponseIndicator(boolean value) {
 		return EncoderHelper.shift(value, 7);
 	}
@@ -38,22 +34,6 @@ public class HeaderEncoder {
 
 	public static byte responseCode(byte value) {
 		return EncoderHelper.shift(value, 0b1111, 0);
-	}
-
-	public static void questionCount(byte[] bytes, short value) {
-		EncoderHelper.addShort(bytes, 4, value);
-	}
-	
-	public static void answerRecordCount(byte[] bytes, short value) {
-		EncoderHelper.addShort(bytes, 6, value);
-	}
-	
-	public static void authorityRecordCount(byte[] bytes, short value) {
-		EncoderHelper.addShort(bytes, 8, value);
-	}
-	
-	public static void additionalRecordCount(byte[] bytes, short value) {
-		EncoderHelper.addShort(bytes, 10, value);
 	}
 
 }

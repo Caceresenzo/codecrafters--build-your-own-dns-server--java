@@ -1,7 +1,6 @@
 package dns.message;
 
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public record Header(
 	/** 16 bits	A random ID assigned to query packets. Response packets must reply with the same ID. */
@@ -44,50 +43,46 @@ public record Header(
 	short additionalRecordCount
 ) {
 
-	public byte[] encode() {
-		final var bytes = new byte[12];
+	public void encode(ByteBuffer buffer) {
+		buffer.putShort(packetIdentifier);
 
-		HeaderEncoder.packetIdentifier(bytes, packetIdentifier);
-
-		bytes[2] = (byte) (0
+		buffer.put((byte) (0
 			| (byte) HeaderEncoder.queryResponseIndicator(queryResponseIndicator)
 			| (byte) HeaderEncoder.operationCode(operationCode)
 			| (byte) HeaderEncoder.authoritativeAnswer(authoritativeAnswer)
 			| (byte) HeaderEncoder.truncation(truncation)
-			| (byte) HeaderEncoder.recursionDesired(recursionDesired));
+			| (byte) HeaderEncoder.recursionDesired(recursionDesired)));
 
-		bytes[3] = (byte) (0
+		buffer.put((byte) (0
 			| (byte) HeaderEncoder.recursionAvailable(recursionAvailable)
 			| (byte) HeaderEncoder.reserved(reserved)
-			| (byte) HeaderEncoder.responseCode(responseCode));
+			| (byte) HeaderEncoder.responseCode(responseCode)));
 
-		HeaderEncoder.questionCount(bytes, questionCount);
-		HeaderEncoder.answerRecordCount(bytes, answerRecordCount);
-		HeaderEncoder.authorityRecordCount(bytes, authorityRecordCount);
-		HeaderEncoder.additionalRecordCount(bytes, additionalRecordCount);
-
-		return bytes;
+		buffer.putShort(questionCount);
+		buffer.putShort(answerRecordCount);
+		buffer.putShort(authorityRecordCount);
+		buffer.putShort(additionalRecordCount);
 	}
 
-	public static Header parse(DataInputStream dataInputStream) throws IOException {
-		final var packetIdentifier = HeaderDecoder.packetIdentifier(dataInputStream);
+	public static Header parse(ByteBuffer buffer) {
+		final var packetIdentifier = buffer.getShort();
 
-		final var flags1 = dataInputStream.readByte();
+		final var flags1 = buffer.get();
 		final var queryResponseIndicator = HeaderDecoder.queryResponseIndicator(flags1);
 		final var operationCode = HeaderDecoder.operationCode(flags1);
 		final var authoritativeAnswer = HeaderDecoder.authoritativeAnswer(flags1);
 		final var truncation = HeaderDecoder.truncation(flags1);
 		final var recursionDesired = HeaderDecoder.recursionDesired(flags1);
 
-		final var flags2 = dataInputStream.readByte();
+		final var flags2 = buffer.get();
 		final var recursionAvailable = HeaderDecoder.recursionAvailable(flags2);
 		final var reserved = HeaderDecoder.reserved(flags2);
 		final var responseCode = HeaderDecoder.responseCode(flags2);
 
-		final var questionCount = HeaderDecoder.questionCount(dataInputStream);
-		final var answerRecordCount = HeaderDecoder.answerRecordCount(dataInputStream);
-		final var authorityRecordCount = HeaderDecoder.authorityRecordCount(dataInputStream);
-		final var additionalRecordCount = HeaderDecoder.additionalRecordCount(dataInputStream);
+		final var questionCount = buffer.getShort();
+		final var answerRecordCount = buffer.getShort();
+		final var authorityRecordCount = buffer.getShort();
+		final var additionalRecordCount = buffer.getShort();
 
 		return new Header(
 			packetIdentifier,

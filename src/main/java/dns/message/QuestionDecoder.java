@@ -1,30 +1,22 @@
 package dns.message;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
 import java.util.List;
+
+import dns.util.DecoderHelper;
 
 public class QuestionDecoder {
 
-	public static List<String> name(DataInputStream dataInputStream) throws IOException {
-		final var labels = new ArrayList<String>();
-
-		byte length;
-		while ((length = dataInputStream.readByte()) != 0) {
-			final var label = dataInputStream.readNBytes(length);
-			labels.add(new String(label));
-		}
-
-		return labels;
+	public static List<String> name(ByteBuffer buffer) {
+		return DecoderHelper.name(buffer);
 	}
 
-	public static short type(DataInputStream dataInputStream) throws IOException {
-		return dataInputStream.readShort();
+	public static short type(ByteBuffer buffer) {
+		return buffer.getShort();
 	}
 
-	public static short class_(DataInputStream dataInputStream) throws IOException {
-		return dataInputStream.readShort();
+	public static short class_(ByteBuffer buffer) {
+		return buffer.getShort();
 	}
 
 }

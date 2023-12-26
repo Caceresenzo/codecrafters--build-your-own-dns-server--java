@@ -1,8 +1,10 @@
 package dns.message;
 
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
+
+import dns.util.DecoderHelper;
+import dns.util.EncoderHelper;
 
 public record Question(
 	/* A domain name, represented as a sequence of "labels" */
@@ -15,22 +17,16 @@ public record Question(
 	short class_
 ) {
 
-	public byte[] encode() {
-		final var nameSize = QuestionEncoder.nameSize(name);
-
-		final var bytes = new byte[nameSize + 4];
-
-		QuestionEncoder.name(bytes, name);
-		QuestionEncoder.type(bytes, nameSize, type);
-		QuestionEncoder.class_(bytes, nameSize, class_);
-
-		return bytes;
+	public void encode(ByteBuffer buffer) {
+		EncoderHelper.name(buffer, name);
+		buffer.putShort(type);
+		buffer.putShort(class_);
 	}
 
-	public static Question parse(DataInputStream dataInputStream) throws IOException {
-		final var name = QuestionDecoder.name(dataInputStream);
-		final var type = QuestionDecoder.type(dataInputStream);
-		final var class_ = QuestionDecoder.class_(dataInputStream);
+	public static Question parse(ByteBuffer buffer) {
+		final var name = DecoderHelper.name(buffer);
+		final var type = buffer.getShort();
+		final var class_ = buffer.getShort();
 
 		return new Question(
 			name,

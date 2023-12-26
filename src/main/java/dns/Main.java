@@ -1,8 +1,9 @@
 package dns;
 
-import java.io.ByteArrayInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 import dns.message.Answer;
@@ -16,20 +17,24 @@ public class Main {
 		System.out.println("codecrafters build-your-own-dns");
 
 		try (final var serverSocket = new DatagramSocket(2053)) {
+			final var bytes = new byte[1024];
+
 			while (true) {
-				final var requestBuffer = new byte[512];
-				final var requestPacket = new DatagramPacket(requestBuffer, requestBuffer.length);
+				final var requestPacket = new DatagramPacket(bytes, bytes.length);
 				serverSocket.receive(requestPacket);
 
 				System.out.println("Received data");
 
-				final var inputStream = new ByteArrayInputStream(requestPacket.getData(), 0, requestPacket.getLength());
+				final var requestBuffer = ByteBuffer.wrap(requestPacket.getData(), requestPacket.getOffset(), requestPacket.getLength());
 
-				final var request = Message.parse(inputStream);
+				final var request = Message.parse(requestBuffer);
 				final var response = handle(request);
 
-				final byte[] responseBuffer = response.encode();
-				final var responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length, requestPacket.getSocketAddress());
+				Arrays.fill(bytes, (byte) 0);
+				final var responseBuffer = ByteBuffer.wrap(bytes);
+				response.encode(responseBuffer);
+
+				final var responsePacket = new DatagramPacket(bytes, responseBuffer.position(), requestPacket.getSocketAddress());
 				serverSocket.send(responsePacket);
 			}
 		}
